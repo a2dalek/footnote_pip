@@ -81,6 +81,18 @@ export namespace BaseDecoder {
       .toString("utf-8");
     return [utf8String, remainingBuffer.subarray(length)];
   }
+
+  export function decodeBuffer(buffer: Buffer): [Buffer, Buffer] {
+    const [length, remainingBuffer] = decodeUvarint(buffer);
+    if (remainingBuffer.length < length) {
+      throw Error("invalid buffer's length");
+    }
+    return [
+      remainingBuffer.subarray(0, length),
+      remainingBuffer.subarray(length),
+    ];
+  }
+
   function decodeArray<T>(
     buffer: Buffer,
     decodeElementFunction: (buf: Buffer) => [T, Buffer]
