@@ -35,7 +35,8 @@ export namespace BaseEncoder {
 
   // number can not handle UInt64, so this must use bigint
   export function encodeUnit64(value: bigint): Buffer {
-    if (value < 0x0000000000000000n || value > 0xffffffffffffffffn) {
+    //0x0000000000000000n && 0xffffffffffffffffn
+    if (value < 0n || value > 18446744073709551615n) {
       throw new Error("Not a Unit64");
     }
 
