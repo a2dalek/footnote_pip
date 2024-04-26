@@ -17,7 +17,10 @@ export namespace MessageSchema {
 
   export type HelloAckMessage = {
     type: MessageType.HELLO_ACK_MESSAGE_TYPE;
+    publicKey: number[];
+    localNonce: number[];
     nonce: number[];
+    remoteNonce: number[];
   };
 
   export type Message = HelloMessage | HelloAckMessage;
