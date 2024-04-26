@@ -1,5 +1,5 @@
 var grpc = require('@grpc/grpc-js');
-import { DecodeMessage, EncodeMessage, pip_002_proto, MessageSchema } from "../pip_002"
+import { DecodeMessage, EncodeMessage, pip_002_proto, MessageSchema } from "../pip_node"
 
 function main() {
   var target = 'localhost:50051';
@@ -18,7 +18,9 @@ function main() {
     userAgent: 'alice',
   }
 
-  client.ProcessHelloMessage(EncodeMessage.encodeHelloMessage(test_hello_message), function(err, response) {
+  var encoded_test_hello_message = EncodeMessage.encodeHelloMessage(test_hello_message);
+
+  client.ProcessHelloMessage(encoded_test_hello_message, function(err, response) {
     console.log(response);
     var response_message = DecodeMessage.decodeHelloMessage(response);
     console.log("Response message \n", response_message);

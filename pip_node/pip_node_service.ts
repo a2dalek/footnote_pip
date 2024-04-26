@@ -1,7 +1,9 @@
+// Handle grpc services of a node
+
 import { log } from "console";
-import { DecodeMessage } from "./DecodeMessage";
-import { EncodeMessage } from "./EncodeMessage";
-import { MessageSchema } from "./MessageSchema";
+import { DecodeMessage } from "../Message/DecodeMessage";
+import { EncodeMessage } from "../Message/EncodeMessage";
+import { MessageSchema } from "../Message/MessageSchema";
 
 var PROTO_PATH = 'proto/pip_node.proto';
 
@@ -20,9 +22,11 @@ var packageDefinition = protoLoader.loadSync(
 export var pip_002_proto = grpc.loadPackageDefinition(packageDefinition).pip_002;
 
 export function ProcessHelloMessage(call, callback) {
-  console.log(call.request)
+  console.log(call.request);
   let hello_message = DecodeMessage.decodeHelloMessage(call.request);
-  console.log(hello_message)
+
+  // TODO: Implement the real logic later
+  console.log(hello_message);
   var test_hello_message : MessageSchema.HelloMessage = {
     type: 0,
     protocolVersion: 1,
@@ -38,10 +42,10 @@ export function ProcessHelloMessage(call, callback) {
   callback(null, encoded_message);
 }
 
-export function ProcessHelloAckMessage(call, callback) {
-  let hello_ack_message = DecodeMessage.decodeHelloAckMessage(call.request);
-  let encoded_message = EncodeMessage.encodeHelloAckMessage();
-  callback(null, {
-    encoded_message
-  });
-}
+// export function ProcessHelloAckMessage(call, callback) {
+//   let hello_ack_message = DecodeMessage.decodeHelloAckMessage(call.request);
+//   let encoded_message = EncodeMessage.encodeHelloAckMessage();
+//   callback(null, {
+//     encoded_message
+//   });
+// }

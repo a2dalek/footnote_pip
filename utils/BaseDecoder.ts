@@ -67,10 +67,6 @@ export namespace BaseDecoder {
   }
 
   export function decodeString(buffer: Buffer): string {
-    // if (!Buffer.isBuffer(buffer)) {
-    //     throw new Error('Input must be a Buffer');
-    // }
-
     const utf8String = buffer.toString('utf-8');
     return utf8String;
   }

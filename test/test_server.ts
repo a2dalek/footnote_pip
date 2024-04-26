@@ -1,4 +1,4 @@
-const { pip_002_proto, ProcessHelloMessage, ProcessHelloAckMessage } = require('../pip_002');
+const { pip_002_proto, ProcessHelloMessage, ProcessHelloAckMessage, IndentityKey } = require('../pip_node');
 
 var grpc = require('@grpc/grpc-js');
 

@@ -1,5 +1,5 @@
 import { BaseEncoder } from "../utils";
-import { MessageSchema } from "../pip_002";
+import { MessageSchema } from "../pip_node";
 
 export namespace EncodeMessage {
 
@@ -8,9 +8,9 @@ export namespace EncodeMessage {
       case MessageSchema.MessageType.HELLO_MESSAGE_TYPE: {
         return encodeHelloMessage(message);
       }
-      case MessageSchema.MessageType.HELLO_ACK_MESSAGE_TYPE: {
-        return encodeHelloAckMessage(message);
-      }
+      // case MessageSchema.MessageType.HELLO_ACK_MESSAGE_TYPE: {
+      //   return encodeHelloAckMessage(message);
+      // }
     }
   }
 
@@ -24,7 +24,7 @@ export namespace EncodeMessage {
     userAgent,
   }: MessageSchema.HelloMessage): any {
     return {
-      type: BaseEncoder.encodeUnit8(0),
+      type: BaseEncoder.encodeUnit8(MessageSchema.MessageType.HELLO_MESSAGE_TYPE),
       protocol_version: BaseEncoder.encodeUnit32(protocolVersion),
       local_nonce: BaseEncoder.encodeArray<number>(localNonce, BaseEncoder.encodeUnit8),
       remote_nonce: BaseEncoder.encodeArray<number>(remoteNonce, BaseEncoder.encodeUnit8),
@@ -35,11 +35,11 @@ export namespace EncodeMessage {
     }
   }
 
-  export function encodeHelloAckMessage({ nonce }: MessageSchema.HelloAckMessage): any {
-    return {
-      nonce: BaseEncoder.encodeArray<number>(nonce, BaseEncoder.encodeUnit8),
-    }
-  }
+  // export function encodeHelloAckMessage({ nonce }: MessageSchema.HelloAckMessage): any {
+  //   return {
+  //     nonce: BaseEncoder.encodeArray<number>(nonce, BaseEncoder.encodeUnit8),
+  //   }
+  // }
 
   // export function encodeMessageEnvelope({
   //   magic,
