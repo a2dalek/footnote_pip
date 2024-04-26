@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+// option java_multiple_files = true;
+// option java_package = "io.grpc.examples.helloworld";
+// option java_outer_classname = "HelloWorldProto";
+// option objc_class_prefix = "HLW";
+
+package pip_002;
+
+// The greeting service definition.
+service Handshake {
+    rpc ProcessHelloMessage (HelloMessage) returns (HelloMessage) {}
+    
+    rpc ProcessHelloAckMessage (HelloAckMessage) returns (HelloAckMessage) {}
+}
+
+message HelloMessage {
+    bytes type = 1;
+    bytes protocol_version = 2;
+    bytes local_nonce = 3;
+    bytes remote_nonce = 4;
+    bytes public_key = 5;
+    bytes external_ip = 6;
+    bytes external_port = 7;
+    string user_agent = 8;
+}
+
+message HelloAckMessage {
+    bytes type = 1;
+    bytes nonce = 2;
+}

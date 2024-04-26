@@ -57,13 +57,25 @@ export namespace BaseEncoder {
 
   export function encodeString(value: string): Buffer {
     const buf = Buffer.from(value, "utf-8");
-    return Buffer.concat([encodeUvarint(buf.length), buf]);
+    return buf;
   }
 
   export function encodeBuffer(value: Buffer): Buffer {
     return Buffer.concat([encodeUvarint(value.length), value]);
   }
+
   export function encodeArray<T>(
+    array: T[],
+    encodeElementFuntion: (x: T) => Buffer
+  ): Buffer {
+    const elementBuffers = array.map((element) => {
+      return encodeElementFuntion(element);
+    });
+
+    return Buffer.concat([...elementBuffers]);
+  }
+
+  export function encodeUvarintArray<T>(
     array: T[],
     encodeElementFuntion: (x: T) => Buffer
   ): Buffer {

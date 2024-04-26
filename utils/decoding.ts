@@ -1,49 +1,44 @@
 export namespace BaseDecoder {
-  export function decodeBoolean(buffer: Buffer): [boolean, Buffer] {
-    if (buffer.length < 1) {
-      throw Error("invalid buffer's length");
-    }
-    // Check if any byte in the Buffer is non-zero
-    const remainingBuffer = buffer.subarray(1);
-    return [buffer[0] === 1, remainingBuffer];
-  }
-
-  export function decodeUnit8(buffer: Buffer): [number, Buffer] {
+  export function decodeBoolean(buffer: Buffer): boolean {
     if (buffer.length < 1) {
       throw Error("invalid buffer's length");
     }
 
-    const remainingBuffer = buffer.subarray(1);
-    return [buffer.readUInt8(0), remainingBuffer]; // Read the first byte as an 8-bit unsigned integer
+    return buffer[0] === 1;
   }
 
-  export function decodeUnit16(buffer: Buffer): [number, Buffer] {
+  export function decodeUnit8(buffer: Buffer): number {
+    if (buffer.length < 1) {
+      throw Error("invalid buffer's length");
+    }
+
+    return buffer.readUInt8(0); // Read the first byte as an 8-bit unsigned integer
+  }
+
+  export function decodeUnit16(buffer: Buffer): number {
     if (buffer.length < 2) {
       throw Error("invalid buffer's length");
     }
 
-    const remainingBuffer = buffer.subarray(2);
-    return [buffer.readUInt16BE(0), remainingBuffer]; // Read as a big-endian 16-bit unsigned integer
+    return buffer.readUInt16BE(0); // Read as a big-endian 16-bit unsigned integer
   }
 
-  export function decodeUnit32(buffer: Buffer): [number, Buffer] {
+  export function decodeUnit32(buffer: Buffer): number {
     if (buffer.length < 4) {
       throw Error("invalid buffer's length");
     }
 
-    const remainingBuffer = buffer.subarray(4);
-    return [buffer.readUInt32BE(0), remainingBuffer]; // Read as a big-endian 32-bit unsigned integer
+    return buffer.readUInt32BE(0); // Read as a big-endian 32-bit unsigned integer
   }
 
-  export function decodeUnit64(buffer: Buffer): [bigint, Buffer] {
+  export function decodeUnit64(buffer: Buffer): bigint {
     if (buffer.length < 8) {
       throw Error("invalid buffer's length");
     }
 
     // Convert the buffer to a BigInt
-    const remainingBuffer = buffer.subarray(8);
     const value = buffer.readBigUInt64BE(0); // Read as a big-endian 64-bit unsigned integer
-    return [value, remainingBuffer];
+    return value;
   }
 
   export function decodeUvarint(buffer: Buffer): [number, Buffer] {
@@ -71,15 +66,13 @@ export namespace BaseDecoder {
     return [len, remainingBuffer];
   }
 
-  export function decodeString(buffer: Buffer): [string, Buffer] {
-    const [length, remainingBuffer] = decodeUvarint(buffer);
-    if (remainingBuffer.length < length) {
-      throw Error("invalid buffer's length");
-    }
-    const utf8String = remainingBuffer
-      .subarray(0, Number(length))
-      .toString("utf-8");
-    return [utf8String, remainingBuffer.subarray(length)];
+  export function decodeString(buffer: Buffer): string {
+    // if (!Buffer.isBuffer(buffer)) {
+    //     throw new Error('Input must be a Buffer');
+    // }
+
+    const utf8String = buffer.toString('utf-8');
+    return utf8String;
   }
 
   export function decodeBuffer(buffer: Buffer): [Buffer, Buffer] {
@@ -93,19 +86,40 @@ export namespace BaseDecoder {
     ];
   }
 
-  function decodeArray<T>(
+  export function decodeArray<T>(
     buffer: Buffer,
-    decodeElementFunction: (buf: Buffer) => [T, Buffer]
+    len: number,
+    decodeElementFunction: (buf: Buffer) => T
+  ): T[] {
+    if (!Buffer.isBuffer(buffer)) {
+      throw new Error('Input must be a Buffer');
+    }
+
+    if (buffer.length % len != 0) {
+        throw new Error('Not suitable type');
+    }
+
+    let n_buff_per_element = buffer.length / len;
+
+    const result = [];
+    let offset = 0;
+
+    for (let i = 0; i < len; i++) {
+      const value = decodeElementFunction(buffer.slice(offset, offset + n_buff_per_element));
+      result.push(value);
+      offset += n_buff_per_element;
+    }
+
+    return result;
+  }
+
+  export function decodeUvarintArray<T>(
+    buffer: Buffer,
+    decodeElementFunction: (buf: Buffer) => T
   ): T[] {
     let remainingBuffer: Buffer;
     let length: number;
     [length, remainingBuffer] = decodeUvarint(buffer);
-    const result: T[] = [];
-    while (length--) {
-      let x: T;
-      [x, remainingBuffer] = decodeElementFunction(buffer);
-      result.push(x);
-    }
-    return result;
+    return decodeArray<T>(remainingBuffer, length, decodeElementFunction);
   }
 }
