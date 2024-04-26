@@ -9,23 +9,13 @@ package pip_002;
 
 // The greeting service definition.
 service Handshake {
-    rpc ProcessHelloMessage (HelloMessage) returns (HelloMessage) {}
-    
-    rpc ProcessHelloAckMessage (HelloAckMessage) returns (HelloAckMessage) {}
+    rpc ProcessMessage(EnvelopeMessage) returns (EnvelopeMessage) {}
 }
 
-message HelloMessage {
-    bytes type = 1;
-    bytes protocol_version = 2;
-    bytes local_nonce = 3;
-    bytes remote_nonce = 4;
-    bytes public_key = 5;
-    bytes external_ip = 6;
-    bytes external_port = 7;
-    string user_agent = 8;
-}
-
-message HelloAckMessage {
-    bytes type = 1;
-    bytes nonce = 2;
+message EnvelopeMessage {
+   bytes magic = 1;
+   bytes type = 2;
+   bytes timestamp = 3;
+   bytes message = 4;
+   bytes signature = 5;
 }

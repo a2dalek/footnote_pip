@@ -17,21 +17,17 @@ export namespace MessageSchema {
 
   export type HelloAckMessage = {
     type: MessageType.HELLO_ACK_MESSAGE_TYPE;
-    publicKey: number[];
-    localNonce: number[];
     nonce: number[];
-    remoteNonce: number[];
   };
 
   export type Message = HelloMessage | HelloAckMessage;
 
   export type MessageEnvelope = {
     magic: number;
-    // TODO: support Date
+    type: number;
     timestamp: number;
     message: Message;
-    // TODO: encrypt with signature
-    signature: Buffer;
+    signature: number[];
   };
 }
   
