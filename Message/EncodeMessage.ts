@@ -1,17 +1,41 @@
 import { BaseEncoder } from "../utils";
 import { MessageSchema } from "../pip_node";
+import { IndentityKey } from "../pip_node";
 
 export namespace EncodeMessage {
 
   export function encodeMessage(message: MessageSchema.Message): Buffer {
+    const lengthPrefix = BaseEncoder.encodeUvarint(1);
+
     switch (message.type) {
       case MessageSchema.MessageType.HELLO_MESSAGE_TYPE: {
-        return encodeHelloMessage(message);
+        return Buffer.concat([lengthPrefix, encodeHelloMessage(message)]);
       }
-      // case MessageSchema.MessageType.HELLO_ACK_MESSAGE_TYPE: {
-      //   return encodeHelloAckMessage(message);
-      // }
+      case MessageSchema.MessageType.HELLO_ACK_MESSAGE_TYPE: {
+        return Buffer.concat([lengthPrefix, encodeHelloAckMessage(message)]);
+      }
     }
+  }
+
+  export function encodeMessageEnvelope({
+    magic,
+    type,
+    timestamp,
+    message,
+    signature,
+  }: MessageSchema.MessageEnvelope): Buffer {
+    let buffer = Buffer.alloc(0);
+    
+    buffer = Buffer.concat([buffer, BaseEncoder.encodeUnit8(type)]);
+    buffer = Buffer.concat([buffer, BaseEncoder.encodeUnit32(timestamp)]);
+    buffer = Buffer.concat([buffer, encodeMessage(message)]);
+
+    let hash_sig = IndentityKey.blake2b65(buffer);
+    let sign_hash_sig = IndentityKey.KeyPair.sign(hash_sig);
+    buffer = Buffer.concat([buffer, BaseEncoder.encodeArray<number>(sign_hash_sig, BaseEncoder.encodeUnit8)]);
+    buffer = Buffer.concat([BaseEncoder.encodeUnit32(magic), buffer]);
+
+    return buffer;
   }
 
   export function encodeHelloMessage({
@@ -22,38 +46,27 @@ export namespace EncodeMessage {
     externalIp,
     externalPort,
     userAgent,
-  }: MessageSchema.HelloMessage): any {
-    return {
-      type: BaseEncoder.encodeUnit8(MessageSchema.MessageType.HELLO_MESSAGE_TYPE),
-      protocol_version: BaseEncoder.encodeUnit32(protocolVersion),
-      local_nonce: BaseEncoder.encodeArray<number>(localNonce, BaseEncoder.encodeUnit8),
-      remote_nonce: BaseEncoder.encodeArray<number>(remoteNonce, BaseEncoder.encodeUnit8),
-      public_key: BaseEncoder.encodeArray<number>(publicKey, BaseEncoder.encodeUnit8),
-      external_ip: BaseEncoder.encodeArray<number>(externalIp, BaseEncoder.encodeUnit8),
-      external_port: BaseEncoder.encodeUnit16(externalPort),
-      user_agent: BaseEncoder.encodeString(userAgent),
-    }
+  }: MessageSchema.HelloMessage): Buffer {
+    let buffer = Buffer.alloc(0);
+
+    buffer = Buffer.concat([buffer, BaseEncoder.encodeUnit8(MessageSchema.MessageType.HELLO_MESSAGE_TYPE)]);
+    buffer = Buffer.concat([buffer, BaseEncoder.encodeUnit32(protocolVersion)]);
+    buffer = Buffer.concat([buffer, BaseEncoder.encodeArray<number>(localNonce, BaseEncoder.encodeUnit8)]);
+    buffer = Buffer.concat([buffer, BaseEncoder.encodeArray<number>(remoteNonce, BaseEncoder.encodeUnit8)]);
+    buffer = Buffer.concat([buffer, BaseEncoder.encodeArray<number>(publicKey, BaseEncoder.encodeUnit8)]);
+    buffer = Buffer.concat([buffer, BaseEncoder.encodeArray<number>(externalIp, BaseEncoder.encodeUnit8)]);
+    buffer = Buffer.concat([buffer, BaseEncoder.encodeUnit16(externalPort)]);
+    buffer = Buffer.concat([buffer, BaseEncoder.encodeString(userAgent)]);
+    
+    return buffer;
   }
 
-  // export function encodeHelloAckMessage({ nonce }: MessageSchema.HelloAckMessage): any {
-  //   return {
-  //     nonce: BaseEncoder.encodeArray<number>(nonce, BaseEncoder.encodeUnit8),
-  //   }
-  // }
+  export function encodeHelloAckMessage({ nonce }: MessageSchema.HelloAckMessage): any {
+    let buffer = Buffer.alloc(0);
 
-  // export function encodeMessageEnvelope({
-  //   magic,
-  //   timestamp,
-  //   message,
-  //   signature,
-  // }: MessageEnvelope): Buffer {
-  //   let buffer = Buffer.alloc(0);
-  //   buffer = Buffer.concat([buffer, BaseEncoder.encodeUnit32(magic)]);
-  //   buffer = Buffer.concat([buffer, BaseEncoder.encodeUnit8(message.type)]);
-  //   buffer = Buffer.concat([buffer, BaseEncoder.encodeUnit32(timestamp)]);
-  //   buffer = Buffer.concat([buffer, encodeMessage(message)]);
-  //   buffer = Buffer.concat([buffer, BaseEncoder.encodeBuffer(signature)]);
-  //   return buffer;
-  // }
+    buffer = Buffer.concat([buffer, BaseEncoder.encodeUnit8(MessageSchema.MessageType.HELLO_ACK_MESSAGE_TYPE)]);
+    buffer = Buffer.concat([buffer,BaseEncoder.encodeArray<number>(nonce, BaseEncoder.encodeUnit8)]);
 
+    return buffer;
+  }
 }
