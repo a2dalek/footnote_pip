@@ -16,7 +16,7 @@ function sayHi(
   }
   // handle logic
 
-  console.log("Response:", JSON.stringify(decodeMessageEnvelope(blob)));
+  console.log("Request:", JSON.stringify(decodeMessageEnvelope(blob)));
 
   const response = { blob: encodeMessageEnvelope(messageEnvelope) };
   callback(null, response);

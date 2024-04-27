@@ -22,10 +22,10 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 // Load the service definition
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
 const hihiService = protoDescriptor["Hihi"] as any;
-
+const port = process.argv[2];
 // Create a new client instance
 const client = new hihiService(
-  "localhost:0",
+  `localhost:${port}`,
   grpc.credentials.createInsecure()
 );
 
