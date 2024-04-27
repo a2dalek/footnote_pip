@@ -6,17 +6,17 @@ import {
   encodeMessageEnvelope,
 } from "../types/protocol";
 
-// function compareMessageEnvelope(
-//   a: MessageEnvelope,
-//   b: MessageEnvelope
-// ): boolean {
-//   return (
-//     a.message.type === b.message.type &&
-//     a.magic === b.magic &&
-//     a.timestamp === b.timestamp &&
-//     Buffer.compare(a.signature, b.signature) === 0
-//   );
-// }
+function compareMessageEnvelope(
+  a: MessageEnvelope,
+  b: MessageEnvelope
+): boolean {
+  return (
+    a.message.type === b.message.type &&
+    a.magic === b.magic &&
+    a.timestamp === b.timestamp &&
+    Buffer.compare(a.signature, b.signature) === 0
+  );
+}
 
 describe("Test protocol encode decode message", () => {
   test("nothing", () => {

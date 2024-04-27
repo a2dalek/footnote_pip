@@ -2,7 +2,6 @@ import { BaseDecoder, BaseEncoder } from "../utils";
 
 export type MessageEnvelope = {
   magic: number;
-  // TODO: support Date
   timestamp: number;
   message: Message;
   // TODO: encrypt with signature

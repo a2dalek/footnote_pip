@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+service Hihi {
+  rpc SayHi (Message) returns (Message);
+}
+
+message Message {
+  bytes blob = 1;
+}
