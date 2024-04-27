@@ -1,8 +1,8 @@
 import * as crypto from 'crypto';
 import * as secp256k1 from 'secp256k1';
 
-const BLOB_SIZE = 16 * 1024 * 1024; // 16 MiB
-const SECTOR_SIZE = 64 * 1024; // 64 KiB
+export const BLOB_SIZE = 16 * 1024 * 1024; // 16 MiB
+export const SECTOR_SIZE = 64 * 1024; // 64 KiB
 
 // Function to generate the secp256k1 signature
 function generateBlobSignature(name: string, updateTimestamp: number, merkleRoot: Uint8Array, reserved: Uint8Array, privateKey: Uint8Array): Buffer {
@@ -45,7 +45,7 @@ const privateKey: Uint8Array = new Uint8Array(Buffer.from("0123456789abcdef01234
 
 const signature: Buffer = generateBlobSignature(name, updateTimestamp, merkleRoot, reserved, privateKey);
 console.log("Blob Signature:", signature.toString('hex'));
-class Blob {
+export class Blob {
     private data: Uint8Array;
     private name: string;
     private owner: string;
@@ -85,7 +85,7 @@ class Blob {
     }
 }
 
-function areUint8ArraysEqual(arr1: Uint8Array, arr2: Uint8Array): boolean {
+export function areUint8ArraysEqual(arr1: Uint8Array, arr2: Uint8Array): boolean {
     if (arr1.length !== arr2.length) {
         return false;
     }
