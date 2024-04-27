@@ -84,9 +84,12 @@ export function decodeMessageEnvelope(
 export enum MessageType {
   HELLO_MESSAGE_TYPE,
   HELLO_ACK_MESSAGE_TYPE,
+  PING_MESSAGE,
+  PEER_REQ_MESSAGE_TYPE,
+  PEER_RES_MESSAGE_TYPE,
 }
 
-export type Message = HelloMessage | HelloAckMessage;
+export type Message = HelloMessage | HelloAckMessage | PingMessage | PeerReqMessage | PeerResMessage;
 export function encodeMessage(message: Message): Buffer {
   switch (message.type) {
     case MessageType.HELLO_MESSAGE_TYPE: {
@@ -95,6 +98,15 @@ export function encodeMessage(message: Message): Buffer {
     case MessageType.HELLO_ACK_MESSAGE_TYPE: {
       return encodeHelloAckMessage(message);
     }
+    case MessageType.PING_MESSAGE: {
+      return encodePingMessage(message);
+    }
+    case MessageType.PEER_REQ_MESSAGE_TYPE: {
+      return encodePeerReqMessage();
+    }
+    case MessageType.PEER_RES_MESSAGE_TYPE: {
+      return encodePeerResMessage(message);
+    } 
   }
 }
 export function decodeMessage(
@@ -108,6 +120,15 @@ export function decodeMessage(
     case MessageType.HELLO_ACK_MESSAGE_TYPE: {
       return decodeHelloAckMessage(buffer);
     }
+    case MessageType.PING_MESSAGE: {
+      return decodePingMessage(buffer);
+    }
+    case MessageType.PEER_REQ_MESSAGE_TYPE: {
+      return decodePeerReqMessage(buffer);
+    }
+    case MessageType.PEER_RES_MESSAGE_TYPE: {
+      return decodePeerResMessage(buffer);
+    }
   }
 }
 
@@ -120,6 +141,27 @@ export type HelloMessage = {
   externalIp: Buffer;
   externalPort: number;
   userAgent: string;
+};
+
+export type PeerResMessage = {
+  type: MessageType.PEER_RES_MESSAGE_TYPE;
+  peer_count: number;
+  peers: PeerObject[];
+};
+
+export type PeerReqMessage = {
+  type: MessageType.PEER_REQ_MESSAGE_TYPE;
+};
+
+export type PingMessage = {
+  type: MessageType.PING_MESSAGE;
+  externalIp: Buffer;
+  externalPort: number;
+};
+
+export type PeerObject = {
+  ip: Buffer
+  port: number
 };
 
 export function encodeHelloMessage({
@@ -192,4 +234,112 @@ export function decodeHelloAckMessage(
 ): [HelloAckMessage, Buffer] {
   const [nonce, remainingBuffer] = BaseDecoder.decodeBuffer(buffer);
   return [{ type: MessageType.HELLO_ACK_MESSAGE_TYPE, nonce }, remainingBuffer];
+}
+
+export function encodePingMessage({
+  externalIp,
+  externalPort,
+}: PingMessage): Buffer {
+  let buffer = Buffer.alloc(0);
+  buffer = Buffer.concat([buffer, BaseEncoder.encodeBuffer(externalIp)]);
+  buffer = Buffer.concat([buffer, BaseEncoder.encodeUnit16(externalPort)]);
+  return buffer;
+}
+
+export function decodePingMessage(
+  buffer: Buffer
+): [PingMessage, Buffer] {
+  let remainingBuffer = buffer;
+
+  let externalIp: Buffer;
+  let externalPort: number;
+
+  [externalIp, remainingBuffer] = BaseDecoder.decodeBuffer(remainingBuffer);
+  [externalPort, remainingBuffer] = BaseDecoder.decodeUnit16(remainingBuffer);
+
+  return [
+    {
+      type: MessageType.PING_MESSAGE,
+      externalIp,
+      externalPort,
+    },
+    remainingBuffer,
+  ];
+}
+
+export function encodePeerReqMessage(): Buffer {
+  let buffer = Buffer.alloc(0);
+  return buffer;
+}
+
+export function decodePeerReqMessage(
+  buffer: Buffer
+): [PeerReqMessage, Buffer] {
+  return [
+    {
+      type: MessageType.PEER_REQ_MESSAGE_TYPE,
+    },
+    buffer,
+  ];
+}
+
+export function encodePeerObject({
+  ip,
+  port,
+}: PeerObject): Buffer {
+  let buffer = Buffer.alloc(0);
+  buffer = Buffer.concat([buffer, BaseEncoder.encodeUnit16(port)]);
+  buffer = Buffer.concat([buffer, BaseEncoder.encodeBuffer(ip)]);
+  return buffer;
+}
+
+export function decodePeerObject(buffer: Buffer): [PeerObject, Buffer] {
+  let remainingBuffer = buffer;
+
+  let ip: Buffer;
+  let port: number;
+
+  [port, remainingBuffer] = BaseDecoder.decodeUnit16(remainingBuffer);
+  [ip, remainingBuffer] = BaseDecoder.decodeBuffer(remainingBuffer);
+  
+
+  return [
+    {
+      ip,
+      port,
+    },
+    remainingBuffer
+  ]
+}
+
+
+export function encodePeerResMessage({
+  peer_count,
+  peers,
+}: PeerResMessage): Buffer {
+  let buffer = Buffer.alloc(0);
+  buffer = Buffer.concat([buffer, BaseEncoder.encodeUnit8(peer_count)]);
+  buffer = Buffer.concat([buffer, BaseEncoder.encodeArray<PeerObject>(peers, encodePeerObject)]);
+  console.log("buffer len ", buffer.length);
+  return buffer;
+}
+
+export function decodePeerResMessage(buffer: Buffer): [PeerResMessage, Buffer] {
+  let remainingBuffer = buffer;
+
+  let peer_count: number;
+  let peers: PeerObject[];
+
+  [peer_count, remainingBuffer] = BaseDecoder.decodeUnit8(remainingBuffer);
+  console.log("peer_count ", peer_count);
+  console.log("remainingBuffer len ", remainingBuffer.length);
+  [peers, remainingBuffer] = BaseDecoder.decodeArray<PeerObject>(remainingBuffer, decodePeerObject);
+  return [
+    {
+      type: MessageType.PEER_RES_MESSAGE_TYPE,
+      peer_count,
+      peers,
+    },
+    remainingBuffer,
+  ];
 }

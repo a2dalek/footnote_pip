@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@grpc/grpc-js": "^1.10.6",
     "@grpc/proto-loader": "^0.7.12",
     "@types/elliptic": "^6.4.18",
     "@types/jest": "^29.5.12",
@@ -16,7 +17,6 @@
     "blakejs": "^1.2.1",
     "dotenv": "^16.4.5",
     "elliptic": "^6.5.5",
-    "grpc": "^1.24.11",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2"
