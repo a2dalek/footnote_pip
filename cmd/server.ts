@@ -4,6 +4,7 @@ import {
   decodeMessageEnvelope,
   encodeMessageEnvelope,
 } from "../types/protocol";
+import { getHost } from "../config";
 
 function sayHi(
   call: grpc.ServerUnaryCall<any>,
@@ -14,7 +15,8 @@ function sayHi(
   if (remainingBuffer.length !== 0) {
     throw Error("Invalid message type");
   }
-  // handle logic
+
+  // TODO: handle logic
 
   console.log("Request:", JSON.stringify(decodeMessageEnvelope(blob)));
 
@@ -22,8 +24,7 @@ function sayHi(
   callback(null, response);
 }
 function main() {
-  const port = process.argv[2];
-  const host = `0.0.0.0:${port}`;
+  const host = getHost();
   const server = new grpc.Server();
   server.addService(protocolService, { sayHi });
   server.bindAsync(

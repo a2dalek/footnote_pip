@@ -1,30 +1,45 @@
 import { BaseDecoder, BaseEncoder } from "../utils";
+import { blake2b } from "blakejs";
+import { ec as EC } from "elliptic";
 
 export type MessageEnvelope = {
-  magic: number;
   timestamp: number;
   message: Message;
-  // TODO: encrypt with signature
-  signature: Buffer;
 };
 
-export function encodeMessageEnvelope({
-  magic,
-  timestamp,
-  message,
-  signature,
-}: MessageEnvelope): Buffer {
+const PROTOCOL_MAGIC_NUMBER = 0xcafecafe;
+
+export function encodeMessageEnvelope(
+  { timestamp, message }: MessageEnvelope,
+  keyPair: EC.KeyPair
+): Buffer {
   let buffer = Buffer.alloc(0);
-  buffer = Buffer.concat([buffer, BaseEncoder.encodeUnit32(magic)]);
+  buffer = Buffer.concat([
+    buffer,
+    BaseEncoder.encodeUnit32(PROTOCOL_MAGIC_NUMBER),
+  ]);
   buffer = Buffer.concat([buffer, BaseEncoder.encodeUnit8(message.type)]);
   buffer = Buffer.concat([buffer, BaseEncoder.encodeUnit32(timestamp)]);
   buffer = Buffer.concat([buffer, encodeMessage(message)]);
-  buffer = Buffer.concat([buffer, BaseEncoder.encodeBuffer(signature)]);
+  const data = Buffer.concat([
+    BaseEncoder.encodeUnit8(message.type),
+    BaseEncoder.encodeUnit32(timestamp),
+    encodeMessage(message),
+  ]);
+  const dataHash = blake2b(data);
+  const signedData = Buffer.from(keyPair.sign(dataHash).toDER("hex"), "hex");
+  buffer = Buffer.concat([buffer, BaseEncoder.encodeBuffer(signedData)]);
   return buffer;
 }
-
+function getPubKeyFromMessage(message: Message): Buffer | null {
+  if (message.type === MessageType.HELLO_MESSAGE_TYPE) {
+    return message.publicKey;
+  }
+  return null;
+}
 export function decodeMessageEnvelope(
-  buffer: Buffer
+  buffer: Buffer,
+  providePubkey: Buffer | null
 ): [MessageEnvelope, Buffer] {
   let remainingBuffer = buffer;
 
@@ -34,16 +49,33 @@ export function decodeMessageEnvelope(
   let message: Message;
   let signature: Buffer;
   [magic, remainingBuffer] = BaseDecoder.decodeUnit32(remainingBuffer);
+  if (magic !== PROTOCOL_MAGIC_NUMBER) {
+    throw Error("Invalid magic number");
+  }
   [messageType, remainingBuffer] = BaseDecoder.decodeUnit8(remainingBuffer);
   [timestamp, remainingBuffer] = BaseDecoder.decodeUnit32(remainingBuffer);
   [message, remainingBuffer] = decodeMessage(remainingBuffer, messageType);
   [signature, remainingBuffer] = BaseDecoder.decodeBuffer(remainingBuffer);
+  const pubKey = providePubkey ?? getPubKeyFromMessage(message);
+  if (pubKey !== null) {
+    // verify signature
+    const data = Buffer.concat([
+      BaseEncoder.encodeUnit8(message.type),
+      BaseEncoder.encodeUnit32(timestamp),
+      encodeMessage(message),
+    ]);
+    const dataHash = blake2b(data);
+    const ec = new EC("secp256k1");
+
+    const isValid = ec.keyFromPublic(pubKey).verify(dataHash, signature);
+    if (!isValid) {
+      throw Error("Invalid sign");
+    }
+  }
   return [
     {
-      magic,
       timestamp,
       message,
-      signature,
     },
     remainingBuffer,
   ];
@@ -122,6 +154,9 @@ export function decodeHelloMessage(buffer: Buffer): [HelloMessage, Buffer] {
   let userAgent: string;
   [protocolVersion, remainingBuffer] =
     BaseDecoder.decodeUnit32(remainingBuffer);
+  if (protocolVersion !== 2) {
+    throw Error("Invalid protcol version");
+  }
   [localNonce, remainingBuffer] = BaseDecoder.decodeBuffer(remainingBuffer);
   [remoteNonce, remainingBuffer] = BaseDecoder.decodeBuffer(remainingBuffer);
   [publicKey, remainingBuffer] = BaseDecoder.decodeBuffer(remainingBuffer);

@@ -7,6 +7,7 @@ import {
   decodeMessageEnvelope,
   encodeMessageEnvelope,
 } from "../types";
+import { getHost } from "../config";
 
 const PROTO_PATH = "hihi/hihi.proto";
 
@@ -22,12 +23,9 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 // Load the service definition
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
 const hihiService = protoDescriptor["Hihi"] as any;
-const port = process.argv[2];
+const host = getHost();
 // Create a new client instance
-const client = new hihiService(
-  `localhost:${port}`,
-  grpc.credentials.createInsecure()
-);
+const client = new hihiService(host, grpc.credentials.createInsecure());
 
 // Function to make a request to the server
 function hihi(messageEnvelope: MessageEnvelope): void {
