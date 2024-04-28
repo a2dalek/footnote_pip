@@ -1,5 +1,5 @@
 import * as grpcProtoLoader from "@grpc/proto-loader";
-import * as grpc from "grpc";
+import * as grpc from "@grpc/grpc-js";
 
 const PROTO_PATH = "hihi/hihi.proto";
 

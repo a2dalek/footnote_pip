@@ -1,6 +1,6 @@
 import { Server } from "./server";
 import * as protoLoader from "@grpc/proto-loader";
-import * as grpc from "grpc";
+import * as grpc from "@grpc/grpc-js";
 import { User, getHost, localUser } from "../../config";
 
 const PROTO_PATH = "hihi/hihi.proto";
@@ -19,7 +19,9 @@ const protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
 const hihiService = protoDescriptor["Hihi"] as any;
 function main(): void {
   const server = new Server(hihiService);
-  if (localUser === User.ALICE) {
+  server.startPinging();
+  server.startPeerDiscovery();
+  if (localUser === User.ALICE || localUser === User.COOPER) {
     server.handShake(getHost(User.BOB));
   }
 }

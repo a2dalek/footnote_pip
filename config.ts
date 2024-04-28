@@ -4,6 +4,7 @@ dotenv.config();
 export enum User {
   ALICE = "Alice",
   BOB = "Bob",
+  COOPER = "Cooper"
 }
 export function loadUser(): User {
   return process.argv[2] as User;
@@ -17,6 +18,9 @@ export function getPort(user: User = localUser): number {
     }
     case User.BOB: {
       return Number(process.env.BOB_PORT);
+    }
+    case User.COOPER: {
+      return Number(process.env.COOPER_PORT);
     }
   }
   throw Error("Invalid user");

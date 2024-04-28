@@ -93,19 +93,19 @@ export namespace BaseDecoder {
     ];
   }
 
-  function decodeArray<T>(
+  export function decodeArray<T>(
     buffer: Buffer,
     decodeElementFunction: (buf: Buffer) => [T, Buffer]
-  ): T[] {
+  ): [T[], Buffer] {
     let remainingBuffer: Buffer;
     let length: number;
     [length, remainingBuffer] = decodeUvarint(buffer);
     const result: T[] = [];
     while (length--) {
       let x: T;
-      [x, remainingBuffer] = decodeElementFunction(buffer);
+      [x, remainingBuffer] = decodeElementFunction(remainingBuffer);
       result.push(x);
     }
-    return result;
+    return [result, remainingBuffer];
   }
 }

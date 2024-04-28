@@ -63,16 +63,18 @@ export namespace BaseEncoder {
   export function encodeBuffer(value: Buffer): Buffer {
     return Buffer.concat([encodeUvarint(value.length), value]);
   }
+
   export function encodeArray<T>(
     array: T[],
     encodeElementFuntion: (x: T) => Buffer
   ): Buffer {
     const lengthPrefix = encodeUvarint(array.length);
-
-    const elementBuffers = array.map((element) => {
-      return encodeElementFuntion(element);
-    });
-
-    return Buffer.concat([lengthPrefix, ...elementBuffers]);
+    var buffer = Buffer.alloc(0);
+    buffer = Buffer.concat([buffer, lengthPrefix]);
+    for (var [key, element] of array.entries()) {
+      var tmp : Buffer = encodeElementFuntion(element);
+      buffer = Buffer.concat([buffer, tmp]); 
+    }
+    return buffer;
   }
 }
