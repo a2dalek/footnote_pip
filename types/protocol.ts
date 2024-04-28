@@ -320,7 +320,6 @@ export function encodePeerResMessage({
   let buffer = Buffer.alloc(0);
   buffer = Buffer.concat([buffer, BaseEncoder.encodeUnit8(peer_count)]);
   buffer = Buffer.concat([buffer, BaseEncoder.encodeArray<PeerObject>(peers, encodePeerObject)]);
-  console.log("buffer len ", buffer.length);
   return buffer;
 }
 
@@ -331,9 +330,8 @@ export function decodePeerResMessage(buffer: Buffer): [PeerResMessage, Buffer] {
   let peers: PeerObject[];
 
   [peer_count, remainingBuffer] = BaseDecoder.decodeUnit8(remainingBuffer);
-  console.log("peer_count ", peer_count);
-  console.log("remainingBuffer len ", remainingBuffer.length);
   [peers, remainingBuffer] = BaseDecoder.decodeArray<PeerObject>(remainingBuffer, decodePeerObject);
+
   return [
     {
       type: MessageType.PEER_RES_MESSAGE_TYPE,

@@ -100,11 +100,10 @@ export namespace BaseDecoder {
     let remainingBuffer: Buffer;
     let length: number;
     [length, remainingBuffer] = decodeUvarint(buffer);
-    console.log("len ", length);
     const result: T[] = [];
     while (length--) {
       let x: T;
-      [x, remainingBuffer] = decodeElementFunction(buffer);
+      [x, remainingBuffer] = decodeElementFunction(remainingBuffer);
       result.push(x);
     }
     return [result, remainingBuffer];

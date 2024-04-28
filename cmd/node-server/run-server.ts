@@ -20,7 +20,7 @@ const hihiService = protoDescriptor["Hihi"] as any;
 function main(): void {
   const server = new Server(hihiService);
   server.startPinging();
-  // server.startPeerDiscovery();
+  server.startPeerDiscovery();
   if (localUser === User.ALICE || localUser === User.COOPER) {
     server.handShake(getHost(User.BOB));
   }

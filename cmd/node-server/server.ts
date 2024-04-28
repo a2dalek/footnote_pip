@@ -186,8 +186,6 @@ export class Server {
           peers: peer_list_res,
         };
 
-        console.log(responceMessage);
-
         const response = {
           blob: encodeMessageEnvelope(
             {
@@ -377,19 +375,22 @@ export class Server {
 
     const peer_count : number = messageEnvelope.message.peer_count;
     const peers : PeerObject[] = messageEnvelope.message.peers;
-    console.log(messageEnvelope.message);
+
     for (var [key, peer] of peers.entries()) {
-      console.log(peer);
       var ip = (peer.ip).toString('utf-8');
       var port = (peer.port).toString();
       var address = ip + ":" + port;
-      console.log(address)
+
+      // console.log(address);
       if (map_peer.has(address) && map_peer.get(address).connecting == true) {
         continue;
       }
 
-      console.log("Connect to new peer ", ip + ":" + port);
-      this.handShake(ip + ":" + port);
+      if (ip + ":" + port != getHost()) {
+        console.log("Connect to new peer ", ip + ":" + port);
+        this.handShake(ip + ":" + port);
+      }
+
       if (num_peer >= 8) {
         break;
       }
